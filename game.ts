@@ -1,18 +1,18 @@
-import { CheckCollisionCircleRec, DrawText, GetMousePosition, IsMouseButtonPressed, MOUSE_BUTTON_LEFT, GuiButton, DrawRectangleLines, DrawRectangle, MOUSE_BUTTON_RIGHT, DrawCircleLines, BLUE, GuiDisable, GuiEnable } from "raylib";
+import { CheckCollisionCircleRec, DrawText, GetMousePosition, IsMouseButtonPressed, MOUSE_BUTTON_LEFT, GuiButton, DrawRectangleLines, DrawRectangle, MOUSE_BUTTON_RIGHT, DrawCircleLines, BLUE, GuiDisable, GuiEnable, GuiLine, GetKeyPressed, KEY_ONE, KEY_THREE, KEY_TWO } from "raylib";
 import { Enemy } from "./enemy";
-import { Player } from "./player";
-import { BOARD, DARK, DEBUG, RED, SAVE_FILE, WHITE, WINDOW_HEIGHT, WINDOW_WIDTH } from "./const";
+import { Ball } from "./ball";
+import { BOARD, DARK, DEBUG, INIT_PAUSE, RED, SAVE_FILE, WHITE, WINDOW_HEIGHT, WINDOW_WIDTH } from "./const";
 
 let score = 0;
 let ballCost = 100;
 let range = 1;
 let rangeCost = 100;
 let speedCost = 10;
-let pause = false;
+let pause = INIT_PAUSE;
 let level = 1;
 
-let players = Array(2).fill(0).map(() => new Player());
-let enemies: Enemy[] = Array(20).fill(0).map(() => new Enemy());
+export let balls = Array(2).fill(0).map(() => new Ball());
+export let enemies: Enemy[] = Array(20).fill(0).map(() => new Enemy());
 
 await load();
 
@@ -38,8 +38,8 @@ export function game() {
     DrawRectangle(BOARD.x, BOARD.y, BOARD.width, BOARD.height, DARK);
 
     if (DEBUG) {
-        DrawRectangleLines(BOARD.x, BOARD.y, BOARD.width, BOARD.height, WHITE); // Board area
-        DrawRectangleLines(BOARD.x, BOARD.y, BOARD.width - enemies[0].xsize, BOARD.height - enemies[0].ysize, RED); // Enemy spawn area
+        DrawRectangleLines(BOARD.x, BOARD.y, BOARD.width, BOARD.height, WHITE);
+        DrawRectangleLines(BOARD.x, BOARD.y, BOARD.width - enemies[0].xsize, BOARD.height - enemies[0].ysize, RED);
     }
 
     if (!pause && IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
@@ -53,8 +53,8 @@ export function game() {
 
     if (!pause) {
         for (let enemy of enemies) {
-            for (let player of players) {
-                if (player.collide(enemy)) {
+            for (let ball of balls) {
+                if (ball.collide(enemy)) {
                     removeEnemy(enemy);
                     score += 1;
                 }
@@ -62,9 +62,9 @@ export function game() {
         }
     }
 
-    for (let player of players) {
-        if (!pause) player.move();
-        player.draw();
+    for (let ball of balls) {
+        if (!pause) ball.move();
+        ball.draw();
     }
 
     for (let enemy of enemies) {
@@ -75,13 +75,13 @@ export function game() {
         DrawCircleLines(mousePos.x, mousePos.y, range, BLUE);
     }
 
-    const ui = `Score: ${score}   `
-        + `Balls: ${players.length}   `
+    const ui = `Balls: ${balls.length}   `
         + `Enemies: ${enemies.length}   `
         + `Range: ${range}   `
-        + `Speed: ${players[0].speed}   `
-        + `\nLevel: ${level}   `;
-    DrawText(ui, 10, 10, 20, WHITE);
+        + `Speed: ${balls[0].speed}   `
+        + `\nLevel: ${level}   Score: ${score}`;
+    DrawText(ui, 10, 10, 18, WHITE);
+    GuiLine({ x: 0, y: BOARD.y - 5, width: BOARD.width, height: 10 }, `Stats`);
 
     shop();
 
@@ -101,10 +101,11 @@ export function shop() {
         {
             label: `+1 ball\n($${ballCost})`,
             disabled: score < ballCost,
+            shortcut: KEY_ONE,
             action: () => {
-                const player = new Player();
-                player.speed = players[0].speed;
-                players.push(player);
+                const ball = new Ball();
+                ball.speed = balls[0].speed;
+                balls.push(ball);
                 score -= Math.max(0, ballCost);
                 ballCost += Math.round(rangeCost / range * 0.5);
             }
@@ -112,6 +113,7 @@ export function shop() {
         {
             label: `+1 range\n($${rangeCost})`,
             disabled: score < rangeCost,
+            shortcut: KEY_TWO,
             action: () => {
                 score -= Math.max(0, rangeCost);
                 rangeCost += Math.round(rangeCost / range * 0.5);
@@ -121,22 +123,27 @@ export function shop() {
         {
             label: `+10 speed\n($${speedCost})`,
             disabled: score < speedCost,
+            shortcut: KEY_THREE,
             action: () => {
                 score -= Math.max(0, speedCost);
                 speedCost += 10;
-                for (let player of players) {
-                    player.speed += 10;
+                for (let ball of balls) {
+                    ball.speed += 10;
                 }
             }
         }
     ];
 
+    GuiLine({ x: 0, y: (BOARD.height + BOARD.y - 5), width: BOARD.width, height: 10 }, `Shop`);
+
+    const pressed = GetKeyPressed();
+
     for (let i = 0; i < buttons.length; i++) {
         const button = buttons[i];
-        const x = 10 + (buttonWidth + buttonPadding) * i;
+        const x = buttonPadding + (buttonWidth + buttonPadding) * i;
         const y = WINDOW_HEIGHT - buttonHeight - buttonPadding;
         if (button.disabled) GuiDisable(); else GuiEnable();
-        if (GuiButton({ x, y, width: buttonWidth, height: buttonHeight }, button.label)) {
+        if (GuiButton({ x, y, width: buttonWidth, height: buttonHeight }, button.label) || (!button.disabled && pressed === button.shortcut)) {
             button.action();
             save();
             GuiEnable();
@@ -145,25 +152,23 @@ export function shop() {
 }
 
 export async function save() {
-    const gameState = { score, ballCost, range, rangeCost, speedCost, players, enemies, level };
+    const gameState = { score, ballCost, range, rangeCost, speedCost, balls, enemies, level };
     await Bun.file(SAVE_FILE).write(JSON.stringify(gameState));
     // console.log('Game state saved:', gameState);
 }
 
 export async function load() {
     const state = Bun.file(SAVE_FILE);
-    if (await state.exists()) {
-        const gameState = await state.json();
-        level = gameState.level ?? level;
-        score = gameState.score ?? score;
-        ballCost = gameState.ballCost ?? ballCost;
-        range = gameState.range ?? range;
-        rangeCost = gameState.rangeCost ?? rangeCost;
-        speedCost = gameState.speedCost ?? speedCost;
-        players = gameState.players?.map((player => Player.fromJSON(player))) ?? players;
-        enemies = gameState.enemies?.map((enemy => Enemy.fromJSON(enemy))) ?? enemies;
-        // console.log('Game state loaded:', gameState);
-    } else {
-        // console.log('No saved game state found.');
-    }
+    if (!(await state.exists())) return;
+
+    const gameState = await state.json();
+    level = gameState.level ?? level;
+    score = gameState.score ?? score;
+    ballCost = gameState.ballCost ?? ballCost;
+    range = gameState.range ?? range;
+    rangeCost = gameState.rangeCost ?? rangeCost;
+    speedCost = gameState.speedCost ?? speedCost;
+    balls = gameState.balls?.map((ball => Ball.fromJSON(ball))) ?? balls;
+    enemies = gameState.enemies?.map((enemy => Enemy.fromJSON(enemy))) ?? enemies;
+
 }

@@ -1,4 +1,4 @@
-import { InitWindow, CloseWindow, WindowShouldClose, BeginDrawing, EndDrawing, ClearBackground, GetColor, DrawRectangle, GetFrameTime, SetWindowPosition, SetWindowMinSize, IsWindowResized, SetWindowSize } from 'raylib';
+import { InitWindow, CloseWindow, WindowShouldClose, BeginDrawing, EndDrawing, ClearBackground, SetWindowPosition, SetWindowMinSize, IsWindowResized, SetWindowSize } from 'raylib';
 import { WINDOW_HEIGHT, WINDOW_WIDTH, BACKGROUND } from './const';
 import { game, save } from './game';
 
@@ -20,3 +20,7 @@ while (!WindowShouldClose()) {
 }
 
 CloseWindow();
+
+await save();
+
+process.exit(0);

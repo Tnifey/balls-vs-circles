@@ -1,13 +1,13 @@
-import { BLACK, CheckCollisionCircleRec, DrawRectangle, DrawRectangleLines, DrawRectangleLinesEx, DrawRectangleRec, DrawRectangleRounded, DrawRectangleRoundedLines, DrawText, GetCollisionRec, Rectangle, Vector2Add } from "raylib";
+import { DrawRectangleLinesEx, DrawRectangleRec, DrawText, GetColor, MeasureText, Rectangle } from "raylib";
 import { BOARD, BOARD_HEIGHT, BOARD_WIDTH, DEBUG, RED, WHITE } from "./const";
-import { Player } from "./player";
 
 export class Enemy {
     public x: number = 0;
     public y: number = 0;
-    public xsize = 20;
-    public ysize = 20;
+    public xsize = 38;
+    public ysize = 24;
     public color = RED;
+    public score = 1;
 
     constructor() {
         this.randomMove();
@@ -24,10 +24,16 @@ export class Enemy {
     }
 
     draw() {
-        DrawRectangleRec(this.rectangle, this.color);
-        DrawRectangleLinesEx(this.rectangle, 1, BLACK);
+        DrawRectangleRec(this.rectangle, GetColor(0xFF000055));
+        DrawRectangleLinesEx(this.rectangle, 2, RED);
 
-        DEBUG && DrawText(`X:${this.x}\nY:${this.y}`, this.x + 4, this.y + 4, 14, WHITE); // Draw the coordinates
+        const text = `${this.score}`;
+        const textSize = 10;
+        const textWidth = MeasureText(text, textSize);
+
+        DrawText(`${this.score}`, this.x + (this.xsize / 2) - (textWidth / 2), this.y + this.ysize / 2 - (textSize / 2), textSize, WHITE);
+
+        DEBUG && false && DrawText(`X:${this.x}\nY:${this.y}`, this.x + 4, this.y + 4, 14, WHITE);
     }
 
     get rectangle(): Rectangle {
