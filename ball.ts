@@ -78,9 +78,10 @@ export class Ball {
 
     collide(enemy: Enemy): boolean {
         const isCollided = CheckCollisionCircleRec(this.position, this.size, enemy.rectangle);
-        const collision = GetCollisionRec(this.rectangle, enemy.rectangle);
 
         if (isCollided) {
+            const collision = GetCollisionRec(this.rectangle, enemy.rectangle);
+
             // if ball is inside the enemy rectangle, move the ball out
             if (collision.width < 0 && collision.height < 0) {
                 this.x = enemy.x + enemy.xsize + this.size;

@@ -75,12 +75,14 @@ export function game() {
         DrawCircleLines(mousePos.x, mousePos.y, range, BLUE);
     }
 
-    const ui = `Balls: ${balls.length}   `
-        + `Enemies: ${enemies.length}   `
-        + `Range: ${range}   `
-        + `Speed: ${balls[0].speed}   `
-        + `\nLevel: ${level}   Score: ${score}`;
-    DrawText(ui, 10, 10, 18, WHITE);
+    DrawText([
+        `Balls: ${balls.length}`,
+        `Enemies: ${enemies.length}`,
+        `Range: ${range}`,
+        `Speed: ${balls[0].speed}`,
+        `\nLevel: ${level}`,
+        `Score: ${score}`
+    ].join('   '), 10, 10, 18, WHITE);
     GuiLine({ x: 0, y: BOARD.y - 5, width: BOARD.width, height: 10 }, `Stats`);
 
     shop();
