@@ -1,7 +1,7 @@
 import { GetColor, Rectangle } from "raylib";
 
 export const DEBUG = false;
-export const INIT_PAUSE = true;
+export const INIT_PAUSE = false;
 export const WINDOW_WIDTH = 800;
 export const WINDOW_HEIGHT = 600;
 

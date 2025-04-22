@@ -70,6 +70,10 @@ export class Ball {
 
         this.x += this.speed * this.xdir * time;
         this.y += this.speed * this.ydir * time;
+
+        if (this.outOfBounds) {
+            this.randomMove();
+        }
     }
 
     collide(enemy: Enemy): boolean {
@@ -93,6 +97,18 @@ export class Ball {
         }
 
         return isCollided;
+    }
+
+    get outOfBounds(): boolean {
+        const { x, y, width, height } = this.rectangle;
+        const padding = this.size * 2;
+
+        return (
+            x < BOARD.x - padding ||
+            y < BOARD.y - padding ||
+            x + width > BOARD.x + BOARD.width + padding ||
+            y + height > BOARD.y + BOARD.height + padding
+        );
     }
 
     get position(): Vector2 {
