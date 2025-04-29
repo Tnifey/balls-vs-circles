@@ -27,13 +27,15 @@ export class Enemy {
         DrawRectangleRec(this.rectangle, GetColor(0xFF000055));
         DrawRectangleLinesEx(this.rectangle, 2, RED);
 
-        const text = `${this.score}`;
-        const textSize = 10;
-        const textWidth = MeasureText(text, textSize);
-
-        DrawText(`${this.score}`, this.x + (this.xsize / 2) - (textWidth / 2), this.y + this.ysize / 2 - (textSize / 2), textSize, WHITE);
+        this.textInside(`${this.score}`);
 
         DEBUG && false && DrawText(`X:${this.x}\nY:${this.y}`, this.x + 4, this.y + 4, 14, WHITE);
+    }
+
+    textInside(message: string, size = 10) {
+        const text = `${message}`;
+        const textWidth = MeasureText(text, size);
+        DrawText(text, this.x + (this.xsize / 2) - (textWidth / 2), this.y + this.ysize / 2 - (size / 2), size, WHITE);
     }
 
     get rectangle(): Rectangle {

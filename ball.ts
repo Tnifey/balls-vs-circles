@@ -28,15 +28,9 @@ export class Ball {
     }
 
     draw() {
+        this.drawTrail();
         DrawCircleV(this.position, this.size, this.color);
-        const trail = Vector2Add(this.position, { x: this.size * -this.xdir, y: this.size * -this.ydir });
-        const trail1 = Vector2Add(this.position, { x: (this.size * 1.5) * -this.xdir, y: (this.size * 1.5) * -this.ydir });
-        const trail2 = Vector2Add(this.position, { x: (this.size * 2) * -this.xdir, y: (this.size * 2) * -this.ydir });
-        DrawLineEx(this.position, trail, this.size * 2, ColorAlpha(BLUE, 0.2));
-        DrawLineEx(this.position, trail1, this.size * 1.5, ColorAlpha(BLUE, 0.2));
-        DrawLineEx(this.position, trail2, this.size, ColorAlpha(BLUE, 0.4));
-
-        DrawCircleLines(this.x, this.y, this.size + 0.5, BLACK);
+        DrawCircleLines(this.x, this.y, this.size + 0.75, BLACK);
 
         if (DEBUG) {
             DrawText(`X:${this.x}\nY:${this.y}`, this.x + this.size + 2, this.y - this.size, 14, WHITE);
@@ -44,6 +38,15 @@ export class Ball {
             DrawRectangleLinesEx(this.rectangle, 2, GetColor(0xFFFFFF33));
             DrawLineV(this.position, this.movement, WHITE);
         }
+    }
+
+    drawTrail() {
+        const trail = Vector2Add(this.position, { x: this.size * -this.xdir, y: this.size * -this.ydir });
+        const trail1 = Vector2Add(this.position, { x: (this.size * 1.5) * -this.xdir, y: (this.size * 1.5) * -this.ydir });
+        const trail2 = Vector2Add(this.position, { x: (this.size * 2) * -this.xdir, y: (this.size * 2) * -this.ydir });
+        DrawLineEx(this.position, trail, this.size * 2, ColorAlpha(BLUE, 0.2));
+        DrawLineEx(this.position, trail1, this.size * 1.5, ColorAlpha(BLUE, 0.2));
+        DrawLineEx(this.position, trail2, this.size, ColorAlpha(BLUE, 0.4));
     }
 
     move() {
